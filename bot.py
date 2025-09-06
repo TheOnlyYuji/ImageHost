@@ -4,8 +4,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import os
 
 # Load tokens from environment variables
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
 # /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -40,7 +40,8 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
-    print("🤖 Bot is running...")
+    print("🤖 Bot is running...
+           Made By TheOnlyYuji")
     app.run_polling()
 
 if __name__ == "__main__":
