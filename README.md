@@ -21,11 +21,13 @@ This project is designed for easily hosting images via automated uploading.
    cd ImageHost
    ```
 
-2. **Install dependencies:**  
-   (Add details here about requirements if available, e.g., requirements.txt)
+2. **Install dependencies:** 
+ 
+    pip install r requirements.txt
 
-3. **Usage:**  
-   (Add usage instructions here, such as how to run the bot, examples, or commands.)
+3. **Usage:** 
+ 
+   Just Send Your Image To The Bot It Will Upload it To i.ibb.co
 
 ## License
 
@@ -34,7 +36,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## Author
 
 - [TheOnlyYuji](https://github.com/TheOnlyYuji)
-
+  [Light Yagamii](https://t.me/lightayagamii_89) 
 ---
 
 > *Feel free to contribute or open issues to improve this project!*
