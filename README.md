@@ -36,7 +36,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## Author
 
 - [TheOnlyYuji](https://github.com/TheOnlyYuji)
-  [Light Yagamii](https://t.me/lightayagamii_89) 
+
 ---
 
 > *Feel free to contribute or open issues to improve this project!*
