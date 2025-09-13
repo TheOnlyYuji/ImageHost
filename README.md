@@ -1,42 +1,18 @@
-# ImageHost
+# Telegram ImgBB Uploader Bot
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+A Telegram bot that uploads photos to [ImgBB](https://imgbb.com) and returns a shareable link.
 
-## Overview
+## 🚀 Deployment on Render
 
-**ImageHost** is a Python bot that uploads images to [i.ibb.co](https://i.ibb.co/).  
-This project is designed for easily hosting images via automated uploading.
+1. Fork this repo to your GitHub.
+2. Create a **Render Worker** service (NOT Web Service).
+3. Add these environment variables:
+   - `BOT_TOKEN` = your Telegram BotFather token
+   - `IMGBB_API_KEY` = your ImgBB API key
+4. Render will auto-build and run the bot.
 
-## Features
+## 🐳 Run Locally (Docker)
 
-- Upload images to i.ibb.co via a bot
-- Written in Python
-- Open source under the MIT License
-
-## Getting Started
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/TheOnlyYuji/ImageHost.git
-   cd ImageHost
-   ```
-
-2. **Install dependencies:** 
- 
-    pip install r requirements.txt
-
-3. **Usage:** 
- 
-   Just Send Your Image To The Bot It Will Upload it To i.ibb.co
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-## Author
-
-- [TheOnlyYuji](https://github.com/TheOnlyYuji)
-
----
-
-> *Feel free to contribute or open issues to improve this project!*
+```bash
+docker build -t telegram-imgbb-bot .
+docker run -e BOT_TOKEN=12345:abc -e IMGBB_API_KEY=your_key telegram-imgbb-bot
