@@ -7,7 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Render requires an exposed port, but this bot is a worker.
 EXPOSE 8080
 
-CMD ["python3", "bot.py"]
+CMD ["python", "bot.py"]
