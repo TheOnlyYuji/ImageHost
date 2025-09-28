@@ -1,59 +1,51 @@
 import os
-import logging
 import requests
-from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from threading import Thread
+from flask import Flask
+from pyrogram import Client, filters
 
-# Enable logging (to show logs in Render)
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# Telegram + ImgBB config
+API_ID = int(os.getenv("API_ID", "12345"))
+API_HASH = os.getenv("API_HASH", "your_api_hash")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "your_imgbb_key")
 
-# Get environment variables
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
+app = Client("ibbUploaderBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-if not BOT_TOKEN or not IMGBB_API_KEY:
-    raise RuntimeError("❌ BOT_TOKEN and IMGBB_API_KEY must be set in environment variables")
+def upload_to_ibb(file_path: str) -> str:
+    """Upload image to ImgBB and return URL"""
+    with open(file_path, "rb") as f:
+        response = requests.post(
+            "https://api.imgbb.com/1/upload",
+            params={"key": IMGBB_API_KEY},
+            files={"image": f},
+        )
+    data = response.json()
+    if data.get("success"):
+        return data["data"]["url"]
+    else:
+        return "❌ Upload failed!"
 
-# Upload function
-def upload_to_imgbb(image_bytes):
-    url = "https://api.imgbb.com/1/upload"
-    payload = {"key": IMGBB_API_KEY}
-    files = {"image": image_bytes}
-    response = requests.post(url, data=payload, files=files)
-    response.raise_for_status()
-    return response.json()["data"]["url"]
+@app.on_message(filters.photo)
+async def handle_photo(client, message):
+    msg = await message.reply_text("⬆️ Uploading to i.ibb.co ...")
+    file_path = await message.download()
+    link = upload_to_ibb(file_path)
+    await msg.edit_text(f"✅ Uploaded: {link}")
 
-# Handle photos
-async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.message.from_user
-    logger.info("📩 Received photo from %s (%s)", user.username, user.id)
+# --- Flask keepalive server for Render ---
+flask_app = Flask(__name__)
 
-    photo = update.message.photo[-1]
-    photo_file = await photo.get_file()
-    image_bytes = await photo_file.download_as_bytearray()
+@flask_app.route("/")
+def home():
+    return "Bot is running ✅", 200
 
-    try:
-        logger.info("⬆️ Uploading photo to ImgBB...")
-        link = upload_to_imgbb(image_bytes)
-        await update.message.reply_text(f"✅ Uploaded!\n{link}")
-        logger.info("✅ Uploaded successfully: %s", link)
-    except Exception as e:
-        logger.error("❌ Upload failed: %s", e)
-        await update.message.reply_text("❌ Failed to upload. Please try again later.")
-
-# Main
-def main():
-    logger.info("🚀 Starting Telegram ImgBB Bot...")
-
-    app = Application.builder().token(BOT_TOKEN).build()
-    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-
-    logger.info("✅ Bot is running. Waiting for photos...")
-    app.run_polling()
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    flask_app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    main()
+    # Run Flask server in a thread
+    Thread(target=run_flask).start()
+    # Run Telegram bot
+    app.run()
