@@ -9,4 +9,5 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["python", "bot.py"]
+# Run Flask with Gunicorn (production) + Pyrogram bot (in thread)
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "bot:flask_app"]
