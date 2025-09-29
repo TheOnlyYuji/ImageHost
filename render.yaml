@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ibb-uploader-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn bot:flask_app
