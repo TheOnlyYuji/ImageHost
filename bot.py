@@ -11,7 +11,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
 IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "your_imgbb_api_key")
 
 # --- Pyrogram Bot ---
-app = Client("ibbUploaderBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+tg_app = Client("ibbUploaderBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def upload_to_ibb(file_path: str) -> str:
     """Upload image to ImgBB and return URL"""
@@ -27,7 +27,7 @@ def upload_to_ibb(file_path: str) -> str:
     else:
         return "❌ Upload failed!"
 
-@app.on_message(filters.photo)
+@tg_app.on_message(filters.photo)
 async def handle_photo(client, message):
     msg = await message.reply_text("⬆️ Uploading to i.ibb.co ...")
     file_path = await message.download()
@@ -41,8 +41,8 @@ flask_app = Flask(__name__)
 def home():
     return "Bot is running ✅", 200
 
-# --- Start Pyrogram Bot in background ---
+# --- Start Telegram bot automatically ---
 def run_bot():
-    app.run()
+    tg_app.run()
 
 Thread(target=run_bot, daemon=True).start()
