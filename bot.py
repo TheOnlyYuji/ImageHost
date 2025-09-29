@@ -4,28 +4,41 @@ from threading import Thread
 from flask import Flask
 from pyrogram import Client, filters
 
-# --- Config ---
-API_ID = int(os.getenv("API_ID", "12345"))
-API_HASH = os.getenv("API_HASH", "your_api_hash")
-BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "your_imgbb_api_key")
+# ----------------------------
+# 🔑 Config from environment
+# ----------------------------
+API_ID = int(os.getenv("API_ID", "0"))
+API_HASH = os.getenv("API_HASH", "")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
-# --- Pyrogram Bot ---
-tg_app = Client("ibbUploaderBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+# ----------------------------
+# 🤖 Telegram Bot
+# ----------------------------
+tg_app = Client(
+    "ibbUploaderBot",
+    api_id=API_ID,
+    api_hash=API_HASH,
+    bot_token=BOT_TOKEN
+)
+
 
 def upload_to_ibb(file_path: str) -> str:
-    """Upload image to ImgBB and return URL"""
-    with open(file_path, "rb") as f:
-        response = requests.post(
-            "https://api.imgbb.com/1/upload",
-            params={"key": IMGBB_API_KEY},
-            files={"image": f},
-        )
-    data = response.json()
-    if data.get("success"):
-        return data["data"]["url"]
-    else:
+    """Upload an image to i.ibb.co via ImgBB API"""
+    try:
+        with open(file_path, "rb") as f:
+            response = requests.post(
+                "https://api.imgbb.com/1/upload",
+                params={"key": IMGBB_API_KEY},
+                files={"image": f},
+            )
+        data = response.json()
+        if data.get("success"):
+            return data["data"]["url"]
         return "❌ Upload failed!"
+    except Exception as e:
+        return f"⚠️ Error: {e}"
+
 
 @tg_app.on_message(filters.photo)
 async def handle_photo(client, message):
@@ -34,15 +47,25 @@ async def handle_photo(client, message):
     link = upload_to_ibb(file_path)
     await msg.edit_text(f"✅ Uploaded: {link}")
 
-# --- Flask Keep-Alive Server ---
+
+# ----------------------------
+# 🌐 Flask Keepalive App
+# ----------------------------
 flask_app = Flask(__name__)
+
 
 @flask_app.route("/")
 def home():
     return "Bot is running ✅", 200
 
-# --- Start Telegram bot automatically ---
+
+# ----------------------------
+# 🚀 Start Telegram bot thread
+# ----------------------------
 def run_bot():
+    print("🚀 Starting Telegram bot...")
     tg_app.run()
 
+
+# Start bot immediately on import (important for Gunicorn)
 Thread(target=run_bot, daemon=True).start()
