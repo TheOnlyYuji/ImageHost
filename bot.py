@@ -1,71 +1,42 @@
 import os
 import requests
-from threading import Thread
-from flask import Flask
-from pyrogram import Client, filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-# ----------------------------
-# 🔑 Config from environment
-# ----------------------------
-API_ID = int(os.getenv("API_ID", "0"))
-API_HASH = os.getenv("API_HASH", "")
+# Load environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
 
-# ----------------------------
-# 🤖 Telegram Bot
-# ----------------------------
-tg_app = Client(
-    "ibbUploaderBot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 Send me an image and I'll upload it to i.ibb.co!")
 
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    photo = update.message.photo[-1]
+    file = await photo.get_file()
+    file_path = "temp.jpg"
+    await file.download_to_drive(file_path)
 
-def upload_to_ibb(file_path: str) -> str:
-    """Upload an image to i.ibb.co via ImgBB API"""
-    try:
-        with open(file_path, "rb") as f:
-            response = requests.post(
-                "https://api.imgbb.com/1/upload",
-                params={"key": IMGBB_API_KEY},
-                files={"image": f},
-            )
-        data = response.json()
-        if data.get("success"):
-            return data["data"]["url"]
-        return "❌ Upload failed!"
-    except Exception as e:
-        return f"⚠️ Error: {e}"
+    # Upload to i.ibb.co
+    with open(file_path, "rb") as f:
+        url = "https://api.imgbb.com/1/upload"
+        payload = {"key": IMGBB_API_KEY}
+        files = {"image": f}
+        response = requests.post(url, data=payload, files=files)
 
+    data = response.json()
+    if data.get("success"):
+        image_url = data["data"]["url"]
+        await update.message.reply_text(f"✅ Uploaded!\n{image_url}")
+    else:
+        await update.message.reply_text("❌ Upload failed. Try again later.")
 
-@tg_app.on_message(filters.photo)
-async def handle_photo(client, message):
-    msg = await message.reply_text("⬆️ Uploading to i.ibb.co ...")
-    file_path = await message.download()
-    link = upload_to_ibb(file_path)
-    await msg.edit_text(f"✅ Uploaded: {link}")
+async def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.COMMAND & filters.Regex("^/start$"), start))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    print("🚀 Bot started successfully...")
+    await app.run_polling()
 
-
-# ----------------------------
-# 🌐 Flask Keepalive App
-# ----------------------------
-flask_app = Flask(__name__)
-
-
-@flask_app.route("/")
-def home():
-    return "Bot is running ✅", 200
-
-
-# ----------------------------
-# 🚀 Start Telegram bot thread
-# ----------------------------
-def run_bot():
-    print("🚀 Starting Telegram bot...")
-    tg_app.run()
-
-
-# Start bot immediately on import (important for Gunicorn)
-Thread(target=run_bot, daemon=True).start()
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
