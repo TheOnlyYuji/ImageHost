@@ -1,5 +1,2 @@
-pyrogram==2.0.106
-tgcrypto
+python-telegram-bot==20.7
 requests
-flask
-gunicorn
