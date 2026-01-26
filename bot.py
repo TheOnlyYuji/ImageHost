@@ -4,8 +4,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
 # Load environment variables
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8550917261:AAGo6yoNZ38qUG9Q_okijMMLUE3LWdylW5Y")
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "f1bfa51a474f677af33efbad5e14f0b5")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👋 Send me an image and I'll upload it to i.ibb.co!")
